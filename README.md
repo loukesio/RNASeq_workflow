@@ -9,7 +9,7 @@
 │   ├── sample_1/
 │   ├── sample_2/
 │   └── ...
-├── scripts/
+├── code/
 │   ├── install_packages.R
 │   ├── txdb_functions.R
 │   ├── tximport_functions.R
