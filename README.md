@@ -1,5 +1,3 @@
-# rnaseq
-
 # RNA-seq Analysis Pipeline
 
 ## Repository Structure
@@ -12,13 +10,16 @@
 │   ├── sample_2/
 │   └── ...
 ├── scripts/
+│   ├── install_packages.R
 │   ├── txdb_functions.R
 │   ├── tximport_functions.R
-│   └── validate_exp_design.R
+│   ├── validate_exp_design.R
+│   └── deseq2_normalization.R
 ├── results/
 │   ├── txdb.RData
 │   ├── tx2gene.RData
-│   └── txi.RData
+│   ├── txi.RData
+│   └── ml_data.RData
 └── README.md
 ```
 
@@ -32,13 +33,35 @@ flowchart TD
     B -->|create_tx2gene| C[Transcript-Gene Mapping tx2gene]
     kallisto[Kallisto Outputs] -->|tximport| D[Gene-Level Expression Counts txi]
     C --> D
+    D -->|DESeq2 normalization| E[VST Normalized Data ml_data]
 ```
 
 ---
 
 ## Commands and Explanations
 
-### 1. Creating Transcript Database (TxDb)
+### 1. Installing and Loading Packages
+
+```R
+source("scripts/install_packages.R")
+
+cran_pkgs <- c("tidyverse", "here", "gt", "ggtext", "gtExtras", "data.table", 
+               "ggrepel", "RColorBrewer", "patchwork", "seecolor", "pheatmap", 
+               "ggpubr", "glmpca", "gplots", "knitr", "ggvolc")
+
+bioc_pkgs <- c("DESeq2", "tximport", "vsn", "ltc", "genefilter", "PoiClaClu", 
+               "GenomicFeatures", "AnnotationDbi")
+
+github_pkgs <- c("username/lukesky") # Replace with actual GitHub username/repo
+
+install_and_load(cran_pkgs, bioc_pkgs, github_pkgs)
+```
+**Why:**
+Automates package installation and loading, ensuring the required environment for the pipeline is easily reproducible and ready for use.
+
+---
+
+### 2. Creating Transcript Database (TxDb)
 
 ```R
 txdb <- create_txdb(gff_file = "data/your_data.gff",
@@ -50,7 +73,7 @@ Creating a TxDb object from a GFF file standardizes genomic features and annotat
 
 ---
 
-### 2. Loading or Creating TxDb
+### 3. Loading or Creating TxDb
 
 ```R
 txdb <- load_or_create_txdb(gff_file = "data/your_data.gff",
@@ -63,7 +86,7 @@ This function efficiently checks for an existing TxDb and loads it, saving compu
 
 ---
 
-### 3. Creating Transcript-to-Gene Mapping
+### 4. Creating Transcript-to-Gene Mapping
 
 ```R
 tx2gene <- create_tx2gene(txdb, add_prefix = TRUE)
@@ -73,7 +96,7 @@ Creating a transcript-to-gene mapping (`tx2gene`) is essential for aggregating t
 
 ---
 
-### 4. Importing Kallisto Quantifications
+### 5. Importing Kallisto Quantifications
 
 ```R
 txi <- import_kallisto_to_gene_level(kallisto_dir = "kallisto_output/",
@@ -86,7 +109,7 @@ Importing transcript-level quantifications into gene-level abundances simplifies
 
 ---
 
-### 5. Running the Entire Pipeline
+### 6. Running the Entire Pipeline
 
 ```R
 pipeline_results <- rnaseq_pipeline(
@@ -103,7 +126,7 @@ Combining all steps into one pipeline function promotes reproducibility, ensures
 
 ---
 
-### 6. Validating Experimental Design
+### 7. Validating Experimental Design
 
 ```R
 validate_exp_design(exp_design = your_exp_design_dataframe)
@@ -112,3 +135,13 @@ validate_exp_design(exp_design = your_exp_design_dataframe)
 Proper experimental design validation ensures robustness, detects issues such as duplicate samples, missing information, or imbalance, and guides the setup of subsequent statistical analyses.
 
 ---
+
+### 8. DESeq2 Normalization and Variance Stabilization
+
+```R
+# Example usage
+ml_data <- run_deseq2_vst(txi, sample_table, design_formula = ~condition, save_path = "results/ml_data.RData")
+```
+**Why:**
+Encapsulating DESeq2 normalization into a function promotes modularity and simplifies the process, allowing flexible design specification and easy saving of normalized data for downstream analysis.
+
