@@ -1,0 +1,31 @@
+# CRAN packages
+tidyverse
+here
+gt
+ggtext
+gtExtras
+data.table
+ggrepel
+RColorBrewer
+patchwork
+seecolor
+pheatmap
+ggpubr
+glmpca
+gplots
+knitr
+
+
+# Bioconductor packages
+DESeq2
+tximport
+vsn
+genefilter
+PoiClaClu
+GenomicFeatures
+AnnotationDbi
+
+# GitHub packages
+loukesio/lukesky
+loukesio/ggvolc
+loukesio/ltc
